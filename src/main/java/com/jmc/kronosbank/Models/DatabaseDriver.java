@@ -19,11 +19,21 @@ public class DatabaseDriver {
     * */
 
     public ResultSet getClientData(String pAddress, String password) {
-        Statement statement;
+        String sql =
+                """
+                    SELECT * FROM Clients WHERE PayeeAddress=? AND Password=?;
+                """;
+
         ResultSet resultSet = null;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM Clients WHERE PayeeAddress='"+pAddress+"' AND Password='"+password+"';");
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, pAddress);
+            preparedStatement.setString(2, password);
+
+            resultSet = preparedStatement.executeQuery();
+
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -31,11 +41,20 @@ public class DatabaseDriver {
     }
 
     public ResultSet getTransactions(String pAddress, int limit) {
-        Statement statement;
+        String sql =
+                """
+                    SELECT * FROM Transactions WHERE Sender=? OR Receiver=? LIMIT ?;
+                """;
+
         ResultSet resultSet = null;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM Transactions WHERE Sender='"+pAddress+"' OR Receiver='"+pAddress+"' LIMIT "+limit+";");
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, pAddress);
+            preparedStatement.setString(2, pAddress);
+            preparedStatement.setInt(3, limit);
+
+            resultSet = preparedStatement.executeQuery();
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -44,12 +63,18 @@ public class DatabaseDriver {
 
     // Method returns savings account balance
     public double getSavingsAccountBalance(String pAddress) {
-        Statement statement;
+        String sql =
+                """
+                    SELECT * FROM SavingsAccounts WHERE Owner= ?;
+                """;
+
         ResultSet resultSet;
         double balance = 0;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM SavingsAccounts WHERE Owner='"+pAddress+"';");
+            PreparedStatement preparedStatement = this.conn.prepareStatement((sql));
+
+            preparedStatement.setString(1, pAddress);
+            resultSet = preparedStatement.executeQuery();
             balance = resultSet.getDouble("Balance");
         }catch (SQLException e){
             e.printStackTrace();
@@ -59,20 +84,43 @@ public class DatabaseDriver {
 
     // Method to either add or subtract from balance given operation
     public void updateBalance(String pAddress, double amount, String operation) {
-        Statement statement;
+
+        String sql1 =
+                """
+                     SELECT * FROM SavingsAccounts WHERE Owner=?;
+                """;
+
+        String sql2 =
+                """
+                    UPDATE SavingsAccounts SET Balance=? WHERE Owner=?;
+                """;
+
+
         ResultSet resultSet;
         try{
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM SavingsAccounts WHERE Owner='"+pAddress+"';");
+
+            PreparedStatement preparedStatement1 = this.conn.prepareStatement((sql1));
+            preparedStatement1.setString(1, pAddress);
+
+            resultSet = preparedStatement1.executeQuery();
+
+            PreparedStatement preparedStatement2 = this.conn.prepareStatement(sql2);
+            preparedStatement2.setDouble(1, amount);
+            preparedStatement2.setString(2, pAddress);
+
             double newBalance;
+
+
+
             if (operation.equals("ADD")){
                 newBalance = resultSet.getDouble("Balance") + amount;
-                statement.executeUpdate("UPDATE SavingsAccounts SET Balance="+newBalance+" WHERE Owner='"+pAddress+"';");
+                preparedStatement2.executeUpdate();
             } else {
                 if (resultSet.getDouble("Balance") >= amount) {
                     newBalance = resultSet.getDouble("Balance") - amount;
-                    statement.executeUpdate("UPDATE SavingsAccounts SET Balance="+newBalance+" WHERE Owner='"+pAddress+"';");
+                    preparedStatement2.executeUpdate();
                 }
+
             }
         }catch (SQLException e){
             e.printStackTrace();
@@ -81,14 +129,32 @@ public class DatabaseDriver {
 
     // Creates and records new transaction
     public void newTransaction(String sender, String receiver, double amount, String message) {
-        Statement statement;
+
+        String sql =
+                """
+                    INSERT INTO
+                        Transactions(Sender, Receiver, Amount, Date, Message)
+                        VALUES (?, ?, ?, ?, ?);
+                """;
+
+
+
         try {
-            statement = this.conn.createStatement();
-            LocalDate date = LocalDate.now();
-            statement.executeUpdate("INSERT INTO " +
-                    "Transactions(Sender, Receiver, Amount, Date, Message) " +
-                    "VALUES ('"+sender+"', '"+receiver+"', "+amount+", '"+date+"', '"+message+"');");
-        }catch (SQLException e){
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            LocalDate localDate = LocalDate.now();
+
+            // convert Date to LocalDate
+//            Date date = Date.valueOf(localDate);
+
+            preparedStatement.setString(1, sender);
+            preparedStatement.setString(2, receiver);
+            preparedStatement.setDouble(3, amount);
+            preparedStatement.setString(4, localDate.toString());
+            preparedStatement.setString(5, message);
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e){
             e.printStackTrace();
         }
     }
@@ -98,48 +164,88 @@ public class DatabaseDriver {
     * */
 
     public ResultSet getAdminData(String username, String password) {
-        Statement statement;
+
+        String sql =
+                """
+                    SELECT * FROM Admins WHERE Username=? AND Password=?;
+                """;
+
         ResultSet resultSet = null;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM Admins WHERE Username='"+username+"' AND Password='"+password+"';");
-        }catch (Exception e){
+        PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            resultSet = preparedStatement.executeQuery("c");
+        } catch (Exception e){
             e.printStackTrace();
         }
         return resultSet;
     }
 
     public void createClient(String fName, String lName, String pAddress, String password, LocalDate date) {
-        Statement statement;
+
+        String sql =
+                """
+                    INSERT INTO Clients (FirstName, LastName, PayeeAddress, Password, Date)
+                        VALUES (?, ?, ?, ?, ?);
+                        """;
+
+
         try {
-            statement = this.conn.createStatement();
-            statement.executeUpdate("INSERT INTO " +
-                    "Clients (FirstName, LastName, PayeeAddress, Password, Date)" +
-                    "VALUES ('"+fName+"', '"+lName+"', '"+pAddress+"', '"+password+"', '"+date.toString()+"');");
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, fName);
+            preparedStatement.setString(2, lName);
+            preparedStatement.setString(3, pAddress);
+            preparedStatement.setString(4, password);
+            preparedStatement.setString(5, date.toString());
+
+            preparedStatement.executeUpdate();
+
         }catch (SQLException e){
             e.printStackTrace();
         }
     }
 
     public void createCheckingAccount(String owner, String number, double tLimit, double balance) {
-        Statement statement;
+
+        String sql =
+                """
+                    INSERT INTO CheckingAccounts (Owner, AccountNumber, TransactionLimit, Balance)
+                        VALUES (?, ?, ?, ?);
+                """;
+
         try {
-            statement = this.conn.createStatement();
-            statement.executeUpdate("INSERT INTO " +
-                    "CheckingAccounts (Owner, AccountNumber, TransactionLimit, Balance)" +
-                    " VALUES ('"+owner+"', '"+number+"', "+tLimit+", "+balance+")");
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, owner);
+            preparedStatement.setString(2, number);
+            preparedStatement.setDouble(3, tLimit);
+            preparedStatement.setDouble(4, balance);
+
+
+            preparedStatement.executeUpdate();
+
         }catch (SQLException e){
             e.printStackTrace();
         }
     }
 
     public void createSavingsAccount(String owner, String number, double wLimit, double balance) {
-        Statement statement;
+
+        String sql =
+                """
+                    INSERT INTO SavingsAccounts (Owner, AccountNumber, WithdrawalLimit, Balance)"
+                        VALUES (?, ?, ?, ?);
+                """;
+
         try {
-            statement = this.conn.createStatement();
-            statement.executeUpdate("INSERT INTO " +
-                    "SavingsAccounts (Owner, AccountNumber, WithdrawalLimit, Balance)" +
-                    " VALUES ('"+owner+"', '"+number+"', "+wLimit+", "+balance+")");
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, owner);
+            preparedStatement.setString(2, number);
+            preparedStatement.setDouble(3, wLimit);
+            preparedStatement.setDouble(4,  balance);
+
+            preparedStatement.executeUpdate();
+
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -158,10 +264,20 @@ public class DatabaseDriver {
     }
 
     public void depositSavings(String pAddress, double amount) {
-        Statement statement;
+
+        String sql =
+                """
+                    UPDATE SavingsAccounts SET Balance=? WHERE Owner=?;
+                """;
+
+
         try {
-            statement = this.conn.createStatement();
-            statement.executeUpdate("UPDATE SavingsAccounts SET Balance="+amount+" WHERE Owner='"+pAddress+"';");
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, pAddress);
+            preparedStatement.setDouble(2, amount);
+
+            preparedStatement.executeUpdate();
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -172,11 +288,20 @@ public class DatabaseDriver {
     * */
 
     public ResultSet searchClient(String pAddress) {
-        Statement statement;
+
+        String sql =
+                """
+                    SELECT * FROM Clients WHERE PayeeAddress=?;
+                """;
+
         ResultSet resultSet = null;
+
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM Clients WHERE PayeeAddress='"+pAddress+"';");
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, pAddress);
+
+            resultSet = preparedStatement.executeQuery();
+
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -184,12 +309,19 @@ public class DatabaseDriver {
     }
 
     public int getLastClientsId() {
-        Statement statement;
+        String sql =
+                """
+                    SELECT * FROM sqlite_sequence WHERE name='Clients';
+                """;
+
+
         ResultSet resultSet;
         int id = 0;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM sqlite_sequence WHERE name='Clients';");
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+
+            resultSet = preparedStatement.executeQuery();
             id = resultSet.getInt("seq");
         }catch (SQLException e){
             e.printStackTrace();
@@ -198,11 +330,18 @@ public class DatabaseDriver {
     }
 
     public ResultSet getCheckingAccountData(String pAddress) {
-        Statement statement;
+        String sql =
+                """
+                    SELECT * FROM CheckingAccounts WHERE Owner=?;
+                """;
+
         ResultSet resultSet = null;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM CheckingAccounts WHERE Owner='"+pAddress+"';");
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, pAddress);
+
+            resultSet = preparedStatement.executeQuery();
+
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -210,11 +349,17 @@ public class DatabaseDriver {
     }
 
     public ResultSet getSavingsAccountData(String pAddress) {
-        Statement statement;
+        String sql =
+                """
+                    SELECT * FROM SavingsAccounts WHERE Owner=?;
+                """;
+
         ResultSet resultSet = null;
         try {
-            statement = this.conn.createStatement();
-            resultSet = statement.executeQuery("SELECT * FROM SavingsAccounts WHERE Owner='"+pAddress+"';");
+            PreparedStatement preparedStatement = this.conn.prepareStatement(sql);
+            preparedStatement.setString(1, pAddress);
+
+            resultSet = preparedStatement.executeQuery();
         }catch (SQLException e){
             e.printStackTrace();
         }

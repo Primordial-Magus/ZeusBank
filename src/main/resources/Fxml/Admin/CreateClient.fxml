@@ -12,7 +12,7 @@
 <AnchorPane prefHeight="750.0" prefWidth="850.0" styleClass="create_client_container"
             stylesheets="@../../Styles/CreateClient.css" xmlns="http://javafx.com/javafx/18"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.jmc.kronosbank.Controllers.Admin.CreateClientController">
+            fx:controller="com.jmc.zeusbank.Controllers.Admin.CreateClientController">
    <Text layoutX="14.0" layoutY="27.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Create New Client Account"
          AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0"/>
    <VBox fillWidth="false" layoutX="14.0" layoutY="41.0" prefHeight="700.0" prefWidth="600.0"

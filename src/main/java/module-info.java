@@ -1,4 +1,4 @@
-module com.jmc.kronosbank {
+module com.jmc.zeusbank {
     requires javafx.controls;
     requires javafx.fxml;
     requires de.jensd.fx.glyphs.fontawesome;
@@ -6,11 +6,11 @@ module com.jmc.kronosbank {
     requires org.xerial.sqlitejdbc;
 
 
-    opens com.jmc.kronosbank to javafx.fxml;
-    exports com.jmc.kronosbank;
-    exports com.jmc.kronosbank.Controllers;
-    exports com.jmc.kronosbank.Controllers.Admin;
-    exports com.jmc.kronosbank.Controllers.Client;
-    exports com.jmc.kronosbank.Models;
-    exports com.jmc.kronosbank.Views;
+    opens com.jmc.zeusbank to javafx.fxml;
+    exports com.jmc.zeusbank;
+    exports com.jmc.zeusbank.Controllers;
+    exports com.jmc.zeusbank.Controllers.Admin;
+    exports com.jmc.zeusbank.Controllers.Client;
+    exports com.jmc.zeusbank.Models;
+    exports com.jmc.zeusbank.Views;
 }

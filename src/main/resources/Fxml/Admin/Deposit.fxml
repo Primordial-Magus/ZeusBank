@@ -12,7 +12,7 @@
 
 <AnchorPane prefHeight="750.0" prefWidth="850.0" stylesheets="@../../Styles/Deposit.css"
             xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.jmc.kronosbank.Controllers.Admin.DepositController">
+            fx:controller="com.jmc.zeusbank.Controllers.Admin.DepositController">
    <VBox layoutX="15.0" layoutY="137.0" prefHeight="570.0" prefWidth="820.0" AnchorPane.leftAnchor="15.0"
          AnchorPane.topAnchor="100.0">
       <HBox alignment="CENTER" prefHeight="60.0" prefWidth="820.0" styleClass="search_box">
